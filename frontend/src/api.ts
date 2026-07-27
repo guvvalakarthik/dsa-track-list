@@ -1,4 +1,4 @@
-import type { Problem, Summary } from "./types";
+﻿import type { Problem, Recommendation, Summary } from "./types";
 
 const DEFAULT_API =
   import.meta.env.VITE_API_URL || localStorage.getItem("trackforge_api") || "http://localhost:8000";
@@ -53,5 +53,16 @@ export const api = {
     }),
   importZeroTrac: () =>
     request<{ imported: number }>("/api/import/zerotrac", { method: "POST" }),
+  importLeetCodeCatalog: () =>
+    request<{ imported: number; classified: number }>("/api/import/leetcode-catalog", { method: "POST" }),
+  recommendations: () =>
+    request<{
+      items: Recommendation[];
+      solved_basis: number;
+      target_rating: number | null;
+      topics_used: number;
+    }>("/api/recommendations?limit=30"),
 };
+
+
 

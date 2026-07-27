@@ -285,3 +285,57 @@ footer { min-height: 67px; margin-top: 26px; border-top: 1px solid #171e29; disp
   footer { align-items: flex-start; gap: 7px; justify-content: center; flex-direction: column; }
 }
 
+
+.recommendations-page { margin-top: 30px; }
+.recommendation-hero {
+  padding: 34px 38px; border: 1px solid #2a3b35; border-radius: 17px;
+  display: flex; align-items: center; justify-content: space-between; gap: 28px;
+  background:
+    radial-gradient(circle at 82% 30%, rgba(100, 230, 179, .12), transparent 25%),
+    linear-gradient(120deg, #111d1a, #0d131c 60%);
+}
+.recommendation-hero h2 { margin: 10px 0; font: 700 clamp(27px, 3vw, 39px)/1.14 "Manrope"; letter-spacing: -1.5px; }
+.recommendation-hero h2 i { color: #7f8b9d; font-style: normal; }
+.recommendation-hero p { max-width: 650px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+.classify-button { min-width: 214px; }
+.recommendation-insights {
+  margin: 14px 0; display: grid; grid-template-columns: repeat(4, 1fr);
+  border: 1px solid var(--line); border-radius: 13px; background: #0d131c;
+}
+.recommendation-insights > div { min-height: 75px; padding: 16px 20px; border-right: 1px solid var(--line); display: flex; flex-direction: column; justify-content: center; }
+.recommendation-insights > div:last-child { border: 0; }
+.recommendation-insights strong { font: 800 20px "Manrope"; color: var(--mint); }
+.recommendation-insights span { margin-top: 4px; color: #697688; font-size: 9px; text-transform: uppercase; letter-spacing: .7px; }
+.recommendation-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
+.recommendation-card {
+  position: relative; min-height: 310px; padding: 22px; overflow: hidden;
+  border: 1px solid var(--line); border-radius: 15px; background: linear-gradient(145deg, #111923, #0c121b);
+}
+.recommendation-card:hover { border-color: #365447; transform: translateY(-2px); transition: .18s ease; }
+.recommendation-rank { position: absolute; right: 15px; top: 8px; color: #1b2630; font: 800 48px "Manrope"; letter-spacing: -3px; }
+.recommendation-card-head { min-height: 30px; position: relative; display: flex; align-items: center; gap: 8px; }
+.recommendation-card h3 { position: relative; max-width: 84%; margin: 16px 0 8px; font: 700 16px/1.35 "Manrope"; }
+.recommendation-card > p { min-height: 32px; margin: 0 0 14px; color: #758295; font-size: 10px; line-height: 1.55; }
+.recommendation-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.recommendation-tags span { padding: 4px 7px; border-radius: 7px; color: #9fdcc4; background: #142a22; font-size: 8px; }
+.related-evidence { min-height: 65px; margin-top: 16px; padding-top: 13px; border-top: 1px solid #1d2632; }
+.related-evidence small { display: block; margin-bottom: 7px; color: #596678; font-size: 8px; letter-spacing: .8px; }
+.related-evidence span { margin-top: 5px; display: flex; align-items: center; gap: 6px; color: #8b97a8; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.related-evidence svg { flex: none; color: var(--mint); }
+.recommendation-footer { position: absolute; left: 22px; right: 22px; bottom: 19px; display: flex; align-items: center; justify-content: space-between; }
+.recommendation-footer a { display: flex; align-items: center; gap: 5px; color: var(--mint); font-size: 10px; font-weight: 700; text-decoration: none; }
+.recommendation-loading { min-height: 280px; display: flex; align-items: center; justify-content: center; gap: 10px; color: #778496; font-size: 12px; }
+.recommendation-empty { border: 1px solid var(--line); border-radius: 15px; background: #0d131c; }
+
+@media (max-width: 1150px) {
+  .recommendation-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 800px) {
+  .recommendation-hero { align-items: flex-start; flex-direction: column; padding: 26px; }
+  .recommendation-insights { grid-template-columns: repeat(2, 1fr); }
+  .recommendation-insights > div:nth-child(2) { border-right: 0; }
+  .recommendation-insights > div:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+}
+@media (max-width: 580px) {
+  .recommendation-grid { grid-template-columns: 1fr; }
+}

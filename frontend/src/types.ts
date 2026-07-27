@@ -1,4 +1,4 @@
-export type Platform = "leetcode" | "gfg";
+﻿export type Platform = "leetcode" | "gfg";
 
 export interface Problem {
   id: number;
@@ -22,6 +22,13 @@ export interface Problem {
   equivalence_key: string | null;
 }
 
+export interface Recommendation extends Problem {
+  recommendation_score: number;
+  shared_topics: string[];
+  related_to: Array<{ id: number; title: string; url: string }>;
+  reason: string;
+}
+
 export interface TopicSummary {
   name: string;
   total: number;
@@ -36,4 +43,5 @@ export interface Summary {
   completion: number;
   topics: TopicSummary[];
 }
+
 
