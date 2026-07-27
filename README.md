@@ -14,7 +14,8 @@ into one topic-wise checklist.
 - ZeroTrac rating import and solved badges on the original ZeroTrac website
 - Pasted URL status checking
 - Manual solved/unsolved overrides
-- Standard and custom topics
+- Official LeetCode topic classification plus standard and custom topics
+- Personalized related-problem recommendations based on solved history and rating
 - Manual cross-platform equivalence links
 
 ## Quick start
@@ -80,5 +81,6 @@ docker compose up --build
 ```
 
 This starts the API on port 8000 and the built dashboard on port 5173.
+
 
 
