@@ -1,0 +1,25 @@
+﻿services:
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: sqlite:////data/tracker.db
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+    volumes:
+      - tracker-data:/data
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8000
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+volumes:
+  tracker-data:
+
+

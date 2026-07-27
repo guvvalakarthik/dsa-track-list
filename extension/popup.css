@@ -1,0 +1,28 @@
+:root { font-family: Inter, system-ui, sans-serif; color: #e8eef4; background: #0b1018; }
+* { box-sizing: border-box; }
+body { width: 365px; margin: 0; }
+header { height: 72px; padding: 0 18px; border-bottom: 1px solid #232c39; display: flex; align-items: center; gap: 11px; }
+.mark { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; color: #07120e; background: #64e6b3; font-size: 12px; font-weight: 900; }
+header strong, header span { display: block; }
+header strong { font-size: 15px; }
+header span { margin-top: 2px; color: #718094; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; }
+header i { width: 8px; height: 8px; margin-left: auto; border-radius: 50%; background: #5a6576; }
+header i.online { background: #64e6b3; box-shadow: 0 0 0 4px #64e6b318; }
+main { padding: 18px; }
+label { display: block; margin-bottom: 12px; color: #8290a3; font-size: 9px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; }
+input { width: 100%; height: 38px; margin-top: 6px; padding: 0 10px; border: 1px solid #2b3543; border-radius: 8px; outline: 0; color: #e8eef4; background: #111821; font-size: 11px; }
+input:focus { border-color: #4c8e75; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+button { width: 100%; height: 39px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 750; }
+button:disabled { opacity: .6; cursor: wait; }
+.secondary { border: 1px solid #2c3746; color: #aeb8c5; background: #141c27; }
+.primary { border: 0; display: flex; align-items: center; justify-content: center; gap: 8px; color: #161005; background: #f5bd56; }
+.primary.gfg { color: #071208; background: #72dd84; }
+.primary span { font-size: 9px; font-weight: 900; }
+.divider { height: 35px; display: flex; align-items: center; gap: 10px; color: #596679; font-size: 8px; letter-spacing: 1px; }
+.divider::before, .divider::after { content: ""; height: 1px; flex: 1; background: #222b37; }
+.hint { margin: 8px 2px 13px; color: #657285; font-size: 9px; line-height: 1.5; }
+.status { padding: 10px; border-radius: 8px; color: #7d8b9e; background: #111821; font-size: 10px; line-height: 1.4; }
+.status.success { color: #8ce2bf; background: #11271f; }
+.status.error { color: #eea491; background: #271613; }
+

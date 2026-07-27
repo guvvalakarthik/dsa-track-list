@@ -1,0 +1,37 @@
+﻿{
+  "manifest_version": 3,
+  "name": "TrackForge Account Sync",
+  "version": "1.0.2",
+  "description": "Sync accepted LeetCode and GFG problems and annotate ZeroTrac.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": [
+    "http://localhost:8000/*",
+    "https://*/*",
+    "https://leetcode.com/*",
+    "https://www.geeksforgeeks.org/*",
+    "https://practice.geeksforgeeks.org/*",
+    "https://zerotrac.github.io/*"
+  ],
+  "action": {
+    "default_title": "TrackForge",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://leetcode.com/problems/*", "https://www.geeksforgeeks.org/problems/*", "https://practice.geeksforgeeks.org/problems/*"],
+      "js": ["content-platform.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://zerotrac.github.io/leetcode_problem_rating/*"],
+      "js": ["content-zerotrac.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
+
+
+

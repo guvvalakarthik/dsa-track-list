@@ -1,0 +1,32 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>TrackForge</title>
+  </head>
+  <body>
+    <header>
+      <div class="mark">&lt;/&gt;</div>
+      <div><strong>TrackForge</strong><span>Account sync</span></div>
+      <i id="connectionDot"></i>
+    </header>
+    <main>
+      <label>Tracker API URL<input id="apiUrl" value="http://localhost:8000" /></label>
+      <label>Personal token<input id="token" type="password" placeholder="Optional locally" /></label>
+      <div class="split">
+        <label>LeetCode username<input id="leetcodeUser" placeholder="username" /></label>
+        <label>GFG username<input id="gfgUser" placeholder="username" /></label>
+      </div>
+      <button id="save" class="secondary">Save & test connection</button>
+      <div class="divider"><span>IMPORT HISTORY</span></div>
+      <button id="syncLeetcode" class="primary"><span>LC</span>Sync LeetCode accepted</button>
+      <button id="scanGfg" class="primary gfg"><span>GFG</span>Sync GFG accepted</button>
+      <p class="hint">Imports GFG submission history directly. Future accepts are captured automatically on problem pages.</p>
+      <div id="status" class="status">Ready to connect.</div>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>
+
+

@@ -1,0 +1,19 @@
+name: Refresh ZeroTrac data
+
+on:
+  schedule:
+    - cron: "20 4 * * 1"
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call TrackForge importer
+        env:
+          TRACKFORGE_API_URL: ${{ secrets.TRACKFORGE_API_URL }}
+          TRACKFORGE_TOKEN: ${{ secrets.TRACKFORGE_TOKEN }}
+        run: |
+          curl --fail --show-error --request POST \
+            --header "X-Tracker-Token: ${TRACKFORGE_TOKEN}" \
+            "${TRACKFORGE_API_URL}/api/import/zerotrac"
