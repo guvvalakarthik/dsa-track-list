@@ -42,7 +42,7 @@
     });
     try {
       const response = await fetch(
-        `${config.apiUrl.replace(/\/+$/, "")}/api/extension/status-map`,
+        `${TrackForgeUtils.normalizeApiUrl(config.apiUrl)}/api/extension/status-map`,
         { headers: config.token ? { "X-Tracker-Token": config.token } : {} },
       );
       if (!response.ok) return;

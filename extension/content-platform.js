@@ -1,22 +1,18 @@
 (() => {
   const isLeetCode = location.hostname.includes("leetcode.com");
   const platform = isLeetCode ? "leetcode" : "gfg";
-  const pattern = isLeetCode ? /\/problems\/([^/?#]+)/ : /\/problems\/([^/?#]+)/;
-  const match = location.pathname.match(pattern);
-  if (!match) return;
+  const slug = TrackForgeUtils.problemSlug(location.pathname);
+  if (!slug) return;
 
   let sent = false;
-  const successSignals = isLeetCode
-    ? ["Accepted", "All test cases passed"]
-    : ["Problem Solved Successfully", "Correct Answer", "Congratulations"];
+
 
   function detect() {
     if (sent) return;
     const bodyText = document.body?.innerText || "";
-    if (!successSignals.some((signal) => bodyText.includes(signal))) return;
+    if (!TrackForgeUtils.hasAcceptedSignal(bodyText, platform)) return;
 
     sent = true;
-    const slug = match[1];
     const title =
       document.querySelector("h1")?.textContent?.trim() ||
       document.title.split("-")[0].trim() ||

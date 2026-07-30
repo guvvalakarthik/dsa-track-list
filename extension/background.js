@@ -1,4 +1,6 @@
-﻿async function getSettings() {
+importScripts("shared.js");
+
+async function getSettings() {
   return chrome.storage.local.get({
     apiUrl: "http://localhost:8000",
     token: "",
@@ -7,7 +9,7 @@
 
 async function trackerApi(path, options = {}) {
   const { apiUrl, token } = await getSettings();
-  const response = await fetch(`${apiUrl.replace(/\/+$/, "")}${path}`, {
+  const response = await fetch(`${TrackForgeUtils.normalizeApiUrl(apiUrl)}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",

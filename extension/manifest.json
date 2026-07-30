@@ -1,4 +1,4 @@
-﻿{
+{
   "manifest_version": 3,
   "name": "TrackForge Account Sync",
   "version": "1.0.2",
@@ -21,17 +21,18 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://leetcode.com/problems/*", "https://www.geeksforgeeks.org/problems/*", "https://practice.geeksforgeeks.org/problems/*"],
-      "js": ["content-platform.js"],
+      "matches": [
+        "https://leetcode.com/problems/*",
+        "https://www.geeksforgeeks.org/problems/*",
+        "https://practice.geeksforgeeks.org/problems/*"
+      ],
+      "js": ["shared.js", "content-platform.js"],
       "run_at": "document_idle"
     },
     {
       "matches": ["https://zerotrac.github.io/leetcode_problem_rating/*"],
-      "js": ["content-zerotrac.js"],
+      "js": ["shared.js", "content-zerotrac.js"],
       "run_at": "document_idle"
     }
   ]
 }
-
-
-

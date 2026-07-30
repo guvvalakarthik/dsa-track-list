@@ -1,4 +1,4 @@
-﻿const $ = (id) => document.getElementById(id);
+const $ = (id) => document.getElementById(id);
 
 async function settings() {
   return chrome.storage.local.get({
@@ -16,7 +16,7 @@ function setStatus(message, kind = "") {
 
 async function api(path, options = {}) {
   const config = await settings();
-  const response = await fetch(`${config.apiUrl.replace(/\/+$/, "")}${path}`, {
+  const response = await fetch(`${TrackForgeUtils.normalizeApiUrl(config.apiUrl)}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -48,7 +48,7 @@ async function load() {
 
 $("save").addEventListener("click", async () => {
   await chrome.storage.local.set({
-    apiUrl: $("apiUrl").value.trim().replace(/\/+$/, ""),
+    apiUrl: TrackForgeUtils.normalizeApiUrl($("apiUrl").value),
     token: $("token").value.trim(),
     leetcodeUser: $("leetcodeUser").value.trim(),
     gfgUser: $("gfgUser").value.trim(),

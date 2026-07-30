@@ -5,7 +5,7 @@ import json
 import os
 import re
 import secrets
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Literal
 from urllib.parse import urlparse
 
@@ -31,7 +31,7 @@ from sqlalchemy.pool import StaticPool
 
 
 def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./tracker.db")
