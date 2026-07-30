@@ -9,6 +9,14 @@ from sqlalchemy.pool import StaticPool
 from .config import get_settings
 
 
+def normalize_database_url(value: str) -> str:
+    if value.startswith("postgres://"):
+        return value.replace("postgres://", "postgresql+psycopg://", 1)
+    if value.startswith("postgresql://"):
+        return value.replace("postgresql://", "postgresql+psycopg://", 1)
+    return value
+
+
 def utcnow() -> datetime:
     return datetime.now(UTC)
 
@@ -20,7 +28,7 @@ if settings.database_url.startswith("sqlite"):
     if settings.database_url in {"sqlite://", "sqlite:///:memory:"}:
         engine_options["poolclass"] = StaticPool
 
-engine = create_engine(settings.database_url, **engine_options)
+engine = create_engine(normalize_database_url(settings.database_url), **engine_options)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 

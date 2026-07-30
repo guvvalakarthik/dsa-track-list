@@ -2,6 +2,8 @@
 
 The supported production topology is the base Compose file plus the PostgreSQL overlay. It is portable to a single VM or container host and keeps application secrets out of images.
 
+A managed serverless deployment is also live on Vercel; see [Vercel production](VERCEL.md) for its two-project topology, Neon migration workflow, and verified URLs.
+
 ## Prerequisites
 
 - A Linux host with Docker Engine and Compose v2.

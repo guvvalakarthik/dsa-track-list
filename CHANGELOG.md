@@ -11,6 +11,7 @@ All notable changes are documented here. The format follows Keep a Changelog, an
 - Backend PostgreSQL integration tests, frontend unit coverage, Chromium E2E, extension tests, and automated CI quality gates.
 - Architecture, API, operations, deployment, security, engineering-decision, and contribution documentation.
 - Reproducible portfolio dashboard screenshot.
+- Live Vercel dashboard and FastAPI deployments backed by Neon PostgreSQL in Singapore.
 
 ### Changed
 

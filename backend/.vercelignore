@@ -1,0 +1,13 @@
+.vercel
+.env*
+.venv
+.agents
+skills-lock.json
+__pycache__
+.pytest_cache
+.ruff_cache
+.coverage
+*.db
+tests
+requirements-dev.txt
+Dockerfile

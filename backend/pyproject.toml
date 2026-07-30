@@ -1,3 +1,18 @@
+[project]
+name = "trackforge-api"
+version = "1.0.0"
+description = "TrackForge personal DSA progress API"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "fastapi==0.116.1",
+  "uvicorn[standard]==0.35.0",
+  "sqlalchemy==2.0.41",
+  "pydantic-settings==2.10.1",
+  "httpx==0.28.1",
+  "psycopg[binary]==3.2.9",
+  "alembic==1.16.4",
+  "prometheus-client==0.22.1",
+]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
@@ -19,3 +34,6 @@ line-length = 100
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
 ignore = ["B008", "E501"]
+
+[tool.vercel]
+entrypoint = "app.main:app"

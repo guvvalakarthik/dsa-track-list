@@ -37,7 +37,15 @@ flowchart LR
     A --> O[JSON logs]
 ```
 
-See [Architecture](docs/ARCHITECTURE.md), [API](docs/API.md), [Operations](docs/OPERATIONS.md), [Deployment](docs/DEPLOYMENT.md), and [Engineering decisions](docs/ENGINEERING_DECISIONS.md).
+See [Architecture](docs/ARCHITECTURE.md), [API](docs/API.md), [Operations](docs/OPERATIONS.md), [Deployment](docs/DEPLOYMENT.md), [Vercel production](docs/VERCEL.md), and [Engineering decisions](docs/ENGINEERING_DECISIONS.md).
+
+## Live deployment
+
+- Dashboard: https://trackforge-dsa-tracker.vercel.app
+- API: https://trackforge-api.vercel.app
+- OpenAPI: https://trackforge-api.vercel.app/docs
+
+The live environment uses Vercel FastAPI compute and Neon PostgreSQL in Singapore. Enter the production tracker token in dashboard Settings; it is intentionally never embedded in the public frontend bundle.
 
 ## Quick start with Docker
 
@@ -110,7 +118,7 @@ cd ..\extension
 npm test
 ```
 
-Current local verification: 23 backend tests passed (plus the opt-in PostgreSQL test in CI), 14 frontend tests passed, Chromium E2E passed, extension tests passed, and both production images run as non-root users.
+Current local verification: 25 backend tests passed (plus the opt-in PostgreSQL test in CI), 14 frontend tests passed, Chromium E2E passed, extension tests passed, and both production images run as non-root users.
 
 ## Operational evidence
 

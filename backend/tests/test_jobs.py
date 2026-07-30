@@ -48,3 +48,15 @@ def test_import_job_records_failures(monkeypatch):
 
 def test_missing_import_job_returns_404():
     assert client.get("/api/jobs/does-not-exist").status_code == 404
+
+
+def test_serverless_import_finishes_before_response(monkeypatch):
+    payload = [{"TitleSlug": "serverless-problem", "Title": "Serverless Problem"}]
+    monkeypatch.setenv("VERCEL", "1")
+    monkeypatch.setattr(sync_router, "request_json", lambda *args, **kwargs: payload)
+
+    response = client.post("/api/jobs/import/zerotrac")
+
+    assert response.status_code == 202
+    assert response.json()["status"] == "succeeded"
+    assert response.json()["result"]["imported"] == 1

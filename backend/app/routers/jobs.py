@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from typing import Literal
@@ -18,6 +19,10 @@ from ..security import require_token
 router = APIRouter(prefix="/api/jobs", dependencies=[Depends(require_token)])
 logger = logging.getLogger(__name__)
 recovery_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="trackforge-import")
+
+
+def is_serverless_runtime() -> bool:
+    return os.getenv("VERCEL") == "1"
 
 
 def serialize_job(job: ImportJob, *, deduplicated: bool = False) -> dict:
@@ -80,10 +85,14 @@ def recover_incomplete_jobs() -> int:
             job.error = None
         db.commit()
         for job in active:
-            recovery_executor.submit(execute_import_job, job.id, job.kind)
+            if is_serverless_runtime():
+                execute_import_job(job.id, job.kind)
+            else:
+                recovery_executor.submit(execute_import_job, job.id, job.kind)
         return len(active)
     finally:
         db.close()
+
 
 @router.post("/import/{kind}", status_code=status.HTTP_202_ACCEPTED)
 def queue_import(
@@ -102,7 +111,11 @@ def queue_import(
     job = ImportJob(id=str(uuid.uuid4()), kind=kind, status="queued")
     db.add(job)
     db.commit()
-    background_tasks.add_task(execute_import_job, job.id, kind)
+    if is_serverless_runtime():
+        execute_import_job(job.id, kind)
+        db.refresh(job)
+    else:
+        background_tasks.add_task(execute_import_job, job.id, kind)
     return serialize_job(job)
 
 
