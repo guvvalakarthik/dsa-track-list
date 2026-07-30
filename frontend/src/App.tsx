@@ -1,4 +1,4 @@
-﻿import {
+import {
   ArrowUpRight,
   BarChart3,
   BookOpenCheck,
@@ -33,6 +33,7 @@ const EMPTY_SUMMARY: Summary = {
   leetcode_solved: 0,
   gfg_solved: 0,
   completion: 0,
+  recent_solved: [],
   topics: [],
 };
 
@@ -307,7 +308,9 @@ function Dashboard({
   loading: boolean;
   onNavigate: (view: View) => void;
 }) {
-  const recent = problems.filter((problem) => problem.solved).slice(0, 5);
+  const recent = summary.recent_solved.length
+    ? summary.recent_solved
+    : problems.filter((problem) => problem.solved).slice(0, 5);
   const strongestTopic = summary.topics
     .filter((item) => item.solved)
     .sort((a, b) => b.solved / b.total - a.solved / a.total)[0];

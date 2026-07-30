@@ -1,4 +1,4 @@
-﻿export type Platform = "leetcode" | "gfg";
+export type Platform = "leetcode" | "gfg";
 
 export interface Problem {
   id: number;
@@ -41,6 +41,7 @@ export interface Summary {
   leetcode_solved: number;
   gfg_solved: number;
   completion: number;
+  recent_solved: Problem[];
   topics: TopicSummary[];
 }
 

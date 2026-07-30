@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import hashlib
 import json
@@ -290,6 +290,11 @@ def health() -> dict:
 def summary(db: Session = Depends(get_db)) -> dict:
     problems = db.scalars(select(Problem)).all()
     solved = [problem for problem in problems if problem.solved]
+    recent_solved = sorted(
+        solved,
+        key=lambda problem: problem.solved_at or problem.updated_at or problem.created_at,
+        reverse=True,
+    )[:5]
     topics: dict[str, dict[str, int]] = {}
     for problem in problems:
         for topic in problem.topics + problem.custom_topics:
@@ -304,6 +309,7 @@ def summary(db: Session = Depends(get_db)) -> dict:
         ),
         "gfg_solved": sum(1 for problem in solved if problem.platform == "gfg"),
         "completion": round((len(solved) / len(problems) * 100), 1) if problems else 0,
+        "recent_solved": [serialize_problem(problem) for problem in recent_solved],
         "topics": [
             {"name": name, **counts}
             for name, counts in sorted(
@@ -325,26 +331,39 @@ def list_problems(
     offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),
 ) -> dict:
-    query = select(Problem)
+    conditions = []
     if platform:
-        query = query.where(Problem.platform == platform)
+        conditions.append(Problem.platform == platform)
     if search:
         term = f"%{search.strip()}%"
-        query = query.where(or_(Problem.title.ilike(term), Problem.slug.ilike(term)))
+        conditions.append(or_(Problem.title.ilike(term), Problem.slug.ilike(term)))
     if min_rating is not None:
-        query = query.where(Problem.rating >= min_rating)
+        conditions.append(Problem.rating >= min_rating)
     if max_rating is not None:
-        query = query.where(Problem.rating <= max_rating)
+        conditions.append(Problem.rating <= max_rating)
     if topic:
-        query = query.where(
+        normalized_topic = normalize_topics([topic])
+        topic_value = normalized_topic[0] if normalized_topic else topic.strip()
+        conditions.append(
             or_(
-                Problem.topics_json.ilike(f'%"{topic}"%'),
-                Problem.custom_topics_json.ilike(f'%"{topic}"%'),
+                Problem.topics_json.ilike(f'%"{topic_value}"%'),
+                Problem.custom_topics_json.ilike(f'%"{topic_value}"%'),
             )
         )
-    records = db.scalars(query.order_by(Problem.rating.asc().nullslast(), Problem.title).offset(offset).limit(limit)).all()
     if solved is not None:
-        records = [record for record in records if record.solved is solved]
+        conditions.append(
+            func.coalesce(Problem.manual_override, Problem.auto_solved) == solved
+        )
+
+    total = db.scalar(select(func.count()).select_from(Problem).where(*conditions)) or 0
+    query = (
+        select(Problem)
+        .where(*conditions)
+        .order_by(Problem.rating.asc().nullslast(), Problem.title)
+        .offset(offset)
+        .limit(limit)
+    )
+    records = db.scalars(query).all()
     statuses = group_statuses(db, records)
     return {
         "items": [
@@ -356,7 +375,9 @@ def list_problems(
             )
             for problem in records
         ],
-        "count": len(records),
+        "count": total,
+        "limit": limit,
+        "offset": offset,
     }
 
 

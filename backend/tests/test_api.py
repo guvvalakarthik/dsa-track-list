@@ -1,4 +1,4 @@
-﻿import os
+import os
 
 os.environ["DATABASE_URL"] = "sqlite://"
 os.environ["TRACKER_TOKEN"] = ""
@@ -93,3 +93,60 @@ def test_recommendations_use_solved_topic_similarity():
     assert "Arrays" in match["shared_topics"]
     assert "Recommendation Base" in {item["title"] for item in match["related_to"]}
 
+def test_solved_filter_is_applied_before_pagination():
+    response = client.post(
+        "/api/sync/leetcode",
+        json={
+            "problems": [
+                {
+                    "slug": "aaa-open-pagination",
+                    "title": "AAA Open Pagination",
+                    "url": "https://leetcode.com/problems/aaa-open-pagination/",
+                    "accepted": False,
+                },
+                {
+                    "slug": "bbb-solved-pagination",
+                    "title": "BBB Solved Pagination",
+                    "url": "https://leetcode.com/problems/bbb-solved-pagination/",
+                    "accepted": True,
+                },
+            ]
+        },
+    )
+    assert response.status_code == 200
+
+    page = client.get("/api/problems?solved=true&limit=1").json()
+    assert page["count"] >= 1
+    assert len(page["items"]) == 1
+    assert page["items"][0]["solved"] is True
+    assert page["limit"] == 1
+    assert page["offset"] == 0
+
+
+def test_summary_recent_solved_is_ordered_by_solved_time():
+    response = client.post(
+        "/api/sync/leetcode",
+        json={
+            "problems": [
+                {
+                    "slug": "older-solved",
+                    "title": "Older Solved",
+                    "url": "https://leetcode.com/problems/older-solved/",
+                    "accepted": True,
+                    "solved_at": "2024-01-01T00:00:00Z",
+                },
+                {
+                    "slug": "newer-solved",
+                    "title": "Newer Solved",
+                    "url": "https://leetcode.com/problems/newer-solved/",
+                    "accepted": True,
+                    "solved_at": "2026-01-01T00:00:00Z",
+                },
+            ]
+        },
+    )
+    assert response.status_code == 200
+
+    recent = client.get("/api/summary").json()["recent_solved"]
+    positions = {problem["slug"]: index for index, problem in enumerate(recent)}
+    assert positions["newer-solved"] < positions["older-solved"]
