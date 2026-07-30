@@ -10,7 +10,8 @@ def migrate() -> None:
     tables = set(inspect(engine).get_table_names())
     core_tables = {"problems", "sync_runs"}
     if core_tables.issubset(tables) and "alembic_version" not in tables:
-        command.stamp(config, "head")
+        command.stamp(config, "20260730_01")
+        command.upgrade(config, "head")
     else:
         command.upgrade(config, "head")
 

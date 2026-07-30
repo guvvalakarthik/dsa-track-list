@@ -34,10 +34,10 @@ def test_migration_creates_fresh_schema(tmp_path):
 
     migrated_engine = create_engine(f"sqlite:///{database_path.as_posix()}")
     tables = set(inspect(migrated_engine).get_table_names())
-    assert {"alembic_version", "problems", "sync_runs"}.issubset(tables)
+    assert {"alembic_version", "import_jobs", "problems", "sync_runs"}.issubset(tables)
     with migrated_engine.connect() as connection:
         revision = connection.scalar(text("SELECT version_num FROM alembic_version"))
-    assert revision == "20260730_01"
+    assert revision == "20260730_02"
     migrated_engine.dispose()
 
     schema_check = subprocess.run(

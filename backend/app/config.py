@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     environment: str = "development"
     database_url: str = "sqlite:///./tracker.db"
+    log_level: str = "INFO"
     tracker_token: str = ""
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     zerotrac_data_url: str = (

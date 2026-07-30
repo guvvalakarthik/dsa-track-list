@@ -4,13 +4,13 @@ import json
 import os
 from typing import Literal
 
-import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..database import get_db, utcnow
 from ..domain import group_statuses, normalize_topics, slugify
+from ..http_client import build_http_client, request_json
 from ..models import Problem, SyncRun
 from ..schemas import SyncPayload
 from ..security import require_token
@@ -83,9 +83,8 @@ def import_zerotrac(db: Session = Depends(get_db)) -> dict:
         "https://raw.githubusercontent.com/zerotrac/leetcode_problem_rating/main/data.json",
     )
     try:
-        response = httpx.get(data_url, timeout=30, follow_redirects=True)
-        response.raise_for_status()
-        payload = response.json()
+        with build_http_client(timeout=30) as client:
+            payload = request_json(client, "GET", data_url)
     except Exception as exc:
         db.add(SyncRun(source="zerotrac", status="failed", message=str(exc)))
         db.commit()
@@ -226,9 +225,11 @@ def import_leetcode_catalog(db: Session = Depends(get_db)) -> dict:
     total = 1
     page_size = 100
     try:
-        with httpx.Client(timeout=30, follow_redirects=True) as client:
+        with build_http_client(timeout=30) as client:
             while skip < total:
-                response = client.post(
+                payload = request_json(
+                    client,
+                    "POST",
                     "https://leetcode.com/graphql/",
                     headers={
                         "Content-Type": "application/json",
@@ -245,8 +246,6 @@ def import_leetcode_catalog(db: Session = Depends(get_db)) -> dict:
                         },
                     },
                 )
-                response.raise_for_status()
-                payload = response.json()
                 if payload.get("errors"):
                     raise RuntimeError(payload["errors"][0].get("message", "GraphQL error"))
                 page = payload.get("data", {}).get("problemsetQuestionListV2")

@@ -47,14 +47,26 @@ describe("API client", () => {
   });
 
   it("maps all public API operations to their endpoints", async () => {
-    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(() =>
-      Promise.resolve(
-        new Response(JSON.stringify({ items: [], status: "ok" }), {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+      const url = String(input);
+      let payload: unknown = { items: [], status: "ok" };
+      if (url.includes("/api/jobs/import/")) {
+        payload = { id: "job-1", status: "queued", result: null, error: null };
+      } else if (url.endsWith("/api/jobs/job-1")) {
+        payload = {
+          id: "job-1",
+          status: "succeeded",
+          result: { imported: 1, classified: 1 },
+          error: null,
+        };
+      }
+      return Promise.resolve(
+        new Response(JSON.stringify(payload), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         }),
-      ),
-    );
+      );
+    });
 
     await api.health();
     await api.verify();
@@ -66,7 +78,7 @@ describe("API client", () => {
     await api.importLeetCodeCatalog();
     await api.recommendations();
 
-    expect(fetchMock).toHaveBeenCalledTimes(9);
+    expect(fetchMock).toHaveBeenCalledTimes(11);
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/api/problems/resolve?url="),
       expect.any(Object),

@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-trackforge}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a strong POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-trackforge}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-trackforge} -d ${POSTGRES_DB:-trackforge}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-trackforge}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-trackforge}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres-data:

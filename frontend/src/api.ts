@@ -45,6 +45,24 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json();
 }
 
+type ImportJob<T> = {
+  id: string;
+  status: "queued" | "running" | "succeeded" | "failed";
+  result: T | null;
+  error: string | null;
+};
+
+async function runImportJob<T>(kind: "zerotrac" | "leetcode-catalog"): Promise<T> {
+  const queued = await request<ImportJob<T>>(`/api/jobs/import/${kind}`, { method: "POST" });
+  for (let attempt = 0; attempt < 600; attempt += 1) {
+    const job =
+      attempt === 0 && queued.status !== "queued" ? queued : await request<ImportJob<T>>(`/api/jobs/${queued.id}`);
+    if (job.status === "succeeded" && job.result) return job.result;
+    if (job.status === "failed") throw new Error(job.error || `${kind} import failed`);
+    await new Promise((resolve) => window.setTimeout(resolve, 1000));
+  }
+  throw new Error(`${kind} import timed out`);
+}
 export const api = {
   health: () => request<{ status: string }>("/api/health"),
   verify: () => request<{ authenticated: boolean }>("/api/auth/verify"),
@@ -66,9 +84,9 @@ export const api = {
       body: JSON.stringify({ topics }),
     }),
   importZeroTrac: () =>
-    request<{ imported: number }>("/api/import/zerotrac", { method: "POST" }),
+    runImportJob<{ imported: number }>("zerotrac"),
   importLeetCodeCatalog: () =>
-    request<{ imported: number; classified: number }>("/api/import/leetcode-catalog", { method: "POST" }),
+    runImportJob<{ imported: number; classified: number }>("leetcode-catalog"),
   recommendations: () =>
     request<{
       items: Recommendation[];

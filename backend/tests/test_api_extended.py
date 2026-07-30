@@ -91,24 +91,17 @@ def test_invalid_problem_urls_and_limits_are_rejected():
 
 
 def test_zerotrac_import_upserts_dataset(monkeypatch):
-    class FakeResponse:
-        def raise_for_status(self):
-            return None
-
-        def json(self):
-            return [
-                {
-                    "TitleSlug": "two-sum",
-                    "Title": "Two Sum",
-                    "ID": 1,
-                    "Rating": 1200.4,
-                    "ContestSlug": "weekly-1",
-                    "ProblemIndex": "A",
-                }
-            ]
-
-    monkeypatch.setattr(sync_router.httpx, "get", lambda *args, **kwargs: FakeResponse())
-
+    payload = [
+        {
+            "TitleSlug": "two-sum",
+            "Title": "Two Sum",
+            "ID": 1,
+            "Rating": 1200.4,
+            "ContestSlug": "weekly-1",
+            "ProblemIndex": "A",
+        }
+    ]
+    monkeypatch.setattr(sync_router, "request_json", lambda *args, **kwargs: payload)
     response = client.post("/api/import/zerotrac")
     assert response.status_code == 200
     assert response.json()["imported"] == 1
@@ -168,3 +161,14 @@ def test_security_headers_are_present():
     assert response.headers["x-content-type-options"] == "nosniff"
     assert response.headers["x-frame-options"] == "DENY"
     assert response.headers["referrer-policy"] == "no-referrer"
+
+def test_readiness_metrics_and_request_ids():
+    request_id = "test-request-id"
+    ready = client.get("/api/ready", headers={"X-Request-ID": request_id})
+    assert ready.status_code == 200
+    assert ready.json()["database"] == "ok"
+    assert ready.headers["x-request-id"] == request_id
+
+    metrics = client.get("/metrics")
+    assert metrics.status_code == 200
+    assert "trackforge_http_requests_total" in metrics.text
