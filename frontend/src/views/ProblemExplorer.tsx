@@ -52,7 +52,7 @@ export function ProblemExplorer({
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search title or slugâ€¦"
+            placeholder="Search title or slug…"
           />
         </label>
         {!ratedOnly && (
@@ -110,7 +110,7 @@ export function ProblemExplorer({
                   <div className="problem-title">
                     <strong>{problem.title}</strong>
                     <span>
-                      {problem.external_id && `#${problem.external_id} Â· `}
+                      {problem.external_id && `#${problem.external_id} · `}
                       {problem.contest?.replaceAll("-", " ") || problem.slug}
                     </span>
                   </div>
@@ -123,8 +123,8 @@ export function ProblemExplorer({
                     {!problem.topics.length && !problem.custom_topics.length && <small>Uncategorized</small>}
                   </div>
                 </td>
-                {ratedOnly && <td><span className="rating-chip">{problem.rating || "â€”"}</span></td>}
-                <td><span className={`difficulty ${(problem.difficulty || "").toLowerCase()}`}>{problem.difficulty || "â€”"}</span></td>
+                {ratedOnly && <td><span className="rating-chip">{problem.rating || "—"}</span></td>}
+                <td><span className={`difficulty ${(problem.difficulty || "").toLowerCase()}`}>{problem.difficulty || "—"}</span></td>
                 <td>
                   <a className="row-link" href={problem.url} target="_blank" rel="noreferrer" title="Open problem">
                     <ArrowUpRight size={17} />
@@ -141,7 +141,7 @@ export function ProblemExplorer({
             <p>Sync your accounts with the extension or import the ZeroTrac dataset.</p>
           </div>
         )}
-        {loading && <div className="table-loading"><RefreshCw className="spin" size={21} /> Loading checklistâ€¦</div>}
+        {loading && <div className="table-loading"><RefreshCw className="spin" size={21} /> Loading checklist…</div>}
       </div>
       {problems.length > 250 && <p className="row-limit">Showing the first 250 matching problems. Narrow the list with filters.</p>}
     </section>

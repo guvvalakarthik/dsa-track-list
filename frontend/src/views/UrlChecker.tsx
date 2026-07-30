@@ -34,7 +34,7 @@ export function UrlChecker() {
           <label>
             Problem URL
             <div>
-              <input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://leetcode.com/problems/â€¦" required />
+              <input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://leetcode.com/problems/…" required />
               <button disabled={checking}>
                 {checking ? <RefreshCw size={18} className="spin" /> : <Search size={18} />}
                 {checking ? "Checking" : "Check status"}

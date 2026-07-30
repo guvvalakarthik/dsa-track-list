@@ -73,7 +73,7 @@ export function Dashboard({
         />
         <StatCard
           label="Strongest topic"
-          value={strongestTopic?.name || "â€”"}
+          value={strongestTopic?.name || "—"}
           detail={strongestTopic ? `${strongestTopic.solved}/${strongestTopic.total} solved` : "Start solving to discover"}
           icon={Sparkles}
           color="violet"
@@ -126,7 +126,7 @@ export function Dashboard({
                 <span className={`recent-check ${problem.platform}`}><Check size={15} /></span>
                 <div>
                   <strong>{problem.title}</strong>
-                  <small>{problem.platform === "leetcode" ? "LeetCode" : "GeeksforGeeks"} Â· {problem.topics[0] || "Uncategorized"}</small>
+                  <small>{problem.platform === "leetcode" ? "LeetCode" : "GeeksforGeeks"} · {problem.topics[0] || "Uncategorized"}</small>
                 </div>
                 {problem.rating && <em>{problem.rating}</em>}
                 <ExternalLink size={14} />

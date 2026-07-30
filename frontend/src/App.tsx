@@ -219,13 +219,13 @@ function App() {
                   <span className="section-kicker"><Sparkles size={15} /> EXTERNAL DATASET</span>
                   <h2>Practice by real contest rating</h2>
                   <p>
-                    Import ZeroTracâ€™s weekly dataset, choose a rating range, and keep
+                    Import ZeroTrac’s weekly dataset, choose a rating range, and keep
                     your solved state in sync everywhere.
                   </p>
                 </div>
                 <button className="primary-button" onClick={importZeroTrac} disabled={importing}>
                   <RefreshCw size={17} className={importing ? "spin" : ""} />
-                  {importing ? "Importingâ€¦" : "Import / refresh ZeroTrac"}
+                  {importing ? "Importing…" : "Import / refresh ZeroTrac"}
                 </button>
               </section>
             )}
@@ -252,8 +252,8 @@ function App() {
         {view === "checker" && <UrlChecker />}
 
         <footer>
-          <span>TrackForge stores only problem progress â€” never platform passwords.</span>
-          <span>LeetCode Â· GeeksforGeeks Â· ZeroTrac</span>
+          <span>TrackForge stores only problem progress — never platform passwords.</span>
+          <span>LeetCode · GeeksforGeeks · ZeroTrac</span>
         </footer>
       </main>
 

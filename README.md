@@ -1,86 +1,135 @@
-﻿# TrackForge â€” Personal DSA Progress Tracker
+# TrackForge
 
-TrackForge combines LeetCode, GeeksforGeeks, and the
-[ZeroTrac problem-rating dataset](https://github.com/zerotrac/leetcode_problem_rating)
-into one topic-wise checklist.
+TrackForge is a self-hosted DSA progress system that turns LeetCode, GeeksforGeeks, and ZeroTrac activity into one searchable roadmap. It combines a React dashboard, FastAPI service, PostgreSQL persistence, and a Manifest V3 browser extension.
 
-## What is included
+![TrackForge dashboard](docs/images/dashboard.png)
 
-- React + TypeScript dashboard
-- FastAPI API with SQLite locally and PostgreSQL support in production
-- Chrome/Edge Manifest V3 extension
-- LeetCode accepted-submission sync
-- GFG profile-page import and accepted-submission capture
-- ZeroTrac rating import and solved badges on the original ZeroTrac website
-- Pasted URL status checking
-- Manual solved/unsolved overrides
-- Official LeetCode topic classification plus standard and custom topics
-- Personalized related-problem recommendations based on solved history and rating
-- Manual cross-platform equivalence links
+## Why this project exists
 
-## Quick start
+Problem counts are easy to collect; useful progress context is harder. TrackForge normalizes problems across platforms, preserves automatic and manual solved state, groups equivalent questions, enriches problems with contest ratings and topics, and recommends the next problems from a user's own solved history.
 
-### 1. Start the API
+## Engineering highlights
+
+- Correct server-side filtering before pagination, with stable ordering and accurate totals.
+- Durable, deduplicated import jobs that recover after an API restart.
+- Alembic migrations and PostgreSQL for production; SQLite remains available for local use.
+- Fail-closed production configuration, token verification, explicit CORS, security headers, and non-root containers.
+- Retry/backoff for upstream 429 and 5xx responses without retrying permanent client errors.
+- JSON request logs, request IDs, readiness checks, Prometheus metrics, and a bounded load-smoke tool.
+- Browser-held platform credentials: TrackForge receives problem metadata and accepted state, never LeetCode or GFG passwords.
+- CI gates for Python lint/tests/coverage, React unit coverage/build/E2E, extension tests, and PostgreSQL integration.
+
+## System at a glance
+
+```mermaid
+flowchart LR
+    U[User] --> W[React dashboard]
+    U --> E[MV3 browser extension]
+    W -->|Bearer token| A[FastAPI API]
+    E -->|Bearer token| A
+    A --> P[(PostgreSQL)]
+    A --> J[Durable import jobs]
+    J --> Z[ZeroTrac dataset]
+    J --> L[LeetCode catalog]
+    E --> LC[LeetCode session]
+    E --> GFG[GFG session]
+    A --> M[Prometheus metrics]
+    A --> O[JSON logs]
+```
+
+See [Architecture](docs/ARCHITECTURE.md), [API](docs/API.md), [Operations](docs/OPERATIONS.md), [Deployment](docs/DEPLOYMENT.md), and [Engineering decisions](docs/ENGINEERING_DECISIONS.md).
+
+## Quick start with Docker
+
+Requirements: Docker Desktop or Docker Engine with Compose.
 
 ```powershell
-cd backend
-py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
 Copy-Item .env.example .env
-uvicorn app.main:app --reload --port 8000
+python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
-The API documentation is available at `http://localhost:8000/docs`.
-
-### 2. Start the dashboard
-
-```powershell
-cd frontend
-npm install
-npm run dev
-```
-
-Open `http://localhost:5173`. The default API URL is
-`http://localhost:8000`.
-
-### 3. Load the extension
-
-1. Open `chrome://extensions` or `edge://extensions`.
-2. Enable **Developer mode**.
-3. Choose **Load unpacked** and select the `extension` folder.
-4. Open the extension popup and save your API URL, personal token, and
-   platform usernames.
-5. Stay signed in to LeetCode and GFG in the same browser.
-
-For GFG history import, open your GFG profile page and click
-**Scan current GFG profile** in the extension. Future accepted solutions
-are detected from problem pages.
-
-## ZeroTrac
-
-Use **Import / refresh ZeroTrac** in the dashboard. The backend downloads the
-published `data.json`, upserts its problems, and preserves all personal
-statuses. The extension adds solved badges to
-`https://zerotrac.github.io/leetcode_problem_rating/#/`.
-
-## Configuration
-
-Backend settings are documented in `backend/.env.example`. For a personal
-cloud deployment, set `DATABASE_URL` to a PostgreSQL connection string and set
-`TRACKER_TOKEN` to a long random value. Enter the same token in the dashboard
-and extension.
-
-The platform adapters deliberately keep account passwords and cookies inside
-the browser. Only problem metadata and accepted status are sent to TrackForge.
-
-## Docker
+Put the generated value in `.env` as `TRACKER_TOKEN`, then run:
 
 ```powershell
 docker compose up --build
 ```
 
-This starts the API on port 8000 and the built dashboard on port 5173.
+Open `http://localhost:5173`, enter `http://localhost:8000` plus the token in Settings, and verify the connection. API documentation is at `http://localhost:8000/docs`.
 
+For the PostgreSQL topology used in production:
 
+```powershell
+# Also set a strong POSTGRES_PASSWORD in .env
+docker compose -f docker-compose.yml -f docker-compose.production.yml up --build -d
+```
 
+Migrations run automatically before the API starts. Persistent data lives in named Docker volumes.
+
+## Run from source
+
+### Backend
+
+```powershell
+cd backend
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+Copy-Item .env.example .env
+python -m scripts.migrate
+uvicorn app.main:app --reload --port 8000
+```
+
+### Frontend
+
+```powershell
+cd frontend
+npm ci
+npm run dev
+```
+
+### Browser extension
+
+Open `chrome://extensions` or `edge://extensions`, enable Developer mode, choose **Load unpacked**, and select `extension/`. Save the API URL and the same token used by the backend. TrackForge requests origin access only for the configured API host.
+
+## Quality gates
+
+```powershell
+# Backend
+cd backend
+.\.venv\Scripts\python.exe -m ruff check app migrations scripts tests
+.\.venv\Scripts\python.exe -m pytest --cov=app --cov-report=term-missing
+
+# Frontend
+cd ..\frontend
+npm run test:coverage
+npm run build
+npm run test:e2e
+
+# Extension
+cd ..\extension
+npm test
+```
+
+Current local verification: 23 backend tests passed (plus the opt-in PostgreSQL test in CI), 7 frontend tests passed, Chromium E2E passed, extension tests passed, and both production images run as non-root users.
+
+## Operational evidence
+
+A local Docker Desktop smoke run against the PostgreSQL production overlay sent 100 authenticated readiness requests at concurrency 10 with zero failures. Observed mean latency was 205.7 ms and p95 was 420.6 ms. This is a repeatable smoke result, not a public-cloud benchmark; use `backend/scripts/load_smoke.py` in the target environment before setting an SLO.
+
+## Repository map
+
+```text
+backend/     FastAPI routers, domain layer, models, migrations, tests, scripts
+frontend/    React + TypeScript dashboard, unit tests, Playwright E2E
+extension/   Manifest V3 content scripts, popup, shared utilities, tests
+docs/        Architecture, API, deployment, operations, decisions, screenshots
+.github/     Automated quality gates and collaboration templates
+```
+
+## Current scope
+
+TrackForge is designed as a secure single-user self-hosted application. The bearer token is an intentional low-complexity boundary, not a multi-tenant identity system. A public SaaS version would need per-user identity, authorization, tenancy isolation, quotas, and a managed job queue. Those trade-offs are documented rather than hidden.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
