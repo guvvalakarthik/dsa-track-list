@@ -5,7 +5,8 @@ os.environ["TRACKER_TOKEN"] = ""
 
 from fastapi.testclient import TestClient
 
-from app.main import app, normalize_problem_url, normalize_topics
+from app.domain import normalize_problem_url, normalize_topics
+from app.main import app
 
 client = TestClient(app)
 

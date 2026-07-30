@@ -39,7 +39,7 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements-dev.txt
       - run: pip install -r requirements-dev.txt
-      - run: ruff check app tests
+      - run: ruff check app migrations scripts tests
       - run: pytest --cov=app --cov-report=term-missing
 
   frontend:

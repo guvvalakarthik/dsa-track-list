@@ -4,7 +4,8 @@ import pytest
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
-from app.main import Base, Problem
+from app.database import Base
+from app.models import Problem
 
 
 @pytest.mark.integration

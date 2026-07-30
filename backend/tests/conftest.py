@@ -5,7 +5,7 @@ import pytest
 os.environ["DATABASE_URL"] = "sqlite://"
 os.environ["TRACKER_TOKEN"] = ""
 
-from app.main import Base, engine
+from app.database import Base, engine
 
 
 @pytest.fixture(autouse=True)

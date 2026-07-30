@@ -1,8 +1,10 @@
 from fastapi.testclient import TestClient
 
-from app import main
+from app.config import validate_runtime_configuration
+from app.main import app
+from app.routers import sync as sync_router
 
-client = TestClient(main.app)
+client = TestClient(app)
 
 
 def sync_problem(slug: str, *, accepted: bool = False, topics: list[str] | None = None):
@@ -105,7 +107,7 @@ def test_zerotrac_import_upserts_dataset(monkeypatch):
                 }
             ]
 
-    monkeypatch.setattr(main.httpx, "get", lambda *args, **kwargs: FakeResponse())
+    monkeypatch.setattr(sync_router.httpx, "get", lambda *args, **kwargs: FakeResponse())
 
     response = client.post("/api/import/zerotrac")
     assert response.status_code == 200
@@ -118,17 +120,17 @@ def test_production_configuration_fails_closed():
     import pytest
 
     with pytest.raises(RuntimeError, match="at least 32 characters"):
-        main.validate_runtime_configuration(
-            environment="production", token="short", cors_origins=["https://app.example.com"]
+        validate_runtime_configuration(
+            "production", "short", ["https://app.example.com"]
         )
     with pytest.raises(RuntimeError, match="Wildcard CORS"):
-        main.validate_runtime_configuration(
-            environment="production", token="x" * 32, cors_origins=["*"]
+        validate_runtime_configuration(
+            "production", "x" * 32, ["*"]
         )
-    main.validate_runtime_configuration(
-        environment="production",
-        token="x" * 32,
-        cors_origins=["https://app.example.com"],
+    validate_runtime_configuration(
+        "production",
+        "x" * 32,
+        ["https://app.example.com"],
     )
 
 
