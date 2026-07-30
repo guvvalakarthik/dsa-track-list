@@ -12,6 +12,19 @@
     return String(value || "").trim().replace(/\/+$/, "");
   }
 
+  function validateApiUrl(value) {
+    const parsed = new URL(normalizeApiUrl(value));
+    const localHttp =
+      parsed.protocol === "http:" && ["localhost", "127.0.0.1"].includes(parsed.hostname);
+    if (parsed.protocol !== "https:" && !localHttp) {
+      throw new Error("Use HTTPS for remote APIs; HTTP is allowed only on localhost.");
+    }
+    if (parsed.username || parsed.password) {
+      throw new Error("API URLs cannot contain embedded credentials.");
+    }
+    return `${parsed.origin}${parsed.pathname}`.replace(/\/+$/, "");
+  }
+
   function hasAcceptedSignal(bodyText, platform) {
     return (acceptanceSignals[platform] || []).some((signal) =>
       String(bodyText || "").includes(signal),
@@ -23,5 +36,5 @@
     return match ? match[1] : null;
   }
 
-  return { normalizeApiUrl, hasAcceptedSignal, problemSlug };
+  return { normalizeApiUrl, validateApiUrl, hasAcceptedSignal, problemSlug };
 });

@@ -1,10 +1,11 @@
 importScripts("shared.js");
 
 async function getSettings() {
-  return chrome.storage.local.get({
-    apiUrl: "http://localhost:8000",
-    token: "",
-  });
+  const [local, session] = await Promise.all([
+    chrome.storage.local.get({ apiUrl: "http://localhost:8000" }),
+    chrome.storage.session.get({ token: "" }),
+  ]);
+  return { ...local, ...session };
 }
 
 async function trackerApi(path, options = {}) {

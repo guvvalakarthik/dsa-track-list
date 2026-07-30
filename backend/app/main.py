@@ -34,7 +34,24 @@ def utcnow() -> datetime:
     return datetime.now(UTC)
 
 
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development").strip().lower()
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./tracker.db")
+
+
+def validate_runtime_configuration(
+    environment: str | None = None,
+    token: str | None = None,
+    cors_origins: list[str] | None = None,
+) -> None:
+    runtime = (environment or ENVIRONMENT).strip().lower()
+    configured_token = os.getenv("TRACKER_TOKEN", "").strip() if token is None else token.strip()
+    configured_origins = origins if cors_origins is None and "origins" in globals() else cors_origins
+    if runtime not in {"staging", "production"}:
+        return
+    if len(configured_token) < 32:
+        raise RuntimeError("TRACKER_TOKEN must contain at least 32 characters in staging/production")
+    if configured_origins and "*" in configured_origins:
+        raise RuntimeError("Wildcard CORS origins are forbidden in staging/production")
 engine_options: dict = {"pool_pre_ping": True}
 if DATABASE_URL.startswith("sqlite"):
     engine_options["connect_args"] = {"check_same_thread": False}
@@ -111,13 +128,24 @@ origins = [
     for value in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
     if value.strip()
 ]
+validate_runtime_configuration(cors_origins=origins)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Tracker-Token"],
 )
+
+
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    return response
 
 
 def get_db():
@@ -218,17 +246,17 @@ def normalize_problem_url(raw_url: str) -> tuple[str, str, str]:
 class SyncProblem(BaseModel):
     slug: str = Field(min_length=1)
     title: str = Field(min_length=1)
-    url: str
+    url: str = Field(min_length=10, max_length=700)
     external_id: str | int | None = None
     difficulty: str | None = None
-    topics: list[str] = []
+    topics: list[str] = Field(default_factory=list, max_length=100)
     accepted: bool = True
     solved_at: datetime | None = None
 
 
 class SyncPayload(BaseModel):
-    username: str | None = None
-    problems: list[SyncProblem]
+    username: str | None = Field(default=None, max_length=120)
+    problems: list[SyncProblem] = Field(max_length=5000)
 
 
 class OverridePayload(BaseModel):
@@ -284,6 +312,11 @@ def group_statuses(db: Session, problems: list[Problem]) -> dict[str, bool]:
 @app.get("/api/health")
 def health() -> dict:
     return {"status": "ok", "service": "trackforge", "time": utcnow()}
+
+
+@app.get("/api/auth/verify", dependencies=[Depends(require_token)])
+def verify_auth() -> dict:
+    return {"authenticated": True}
 
 
 @app.get("/api/summary", dependencies=[Depends(require_token)])
@@ -464,6 +497,11 @@ def sync_platform(
     accepted = 0
     for incoming in payload.problems:
         slug = slugify(incoming.slug)
+        canonical_url = (
+            f"https://leetcode.com/problems/{slug}/"
+            if platform == "leetcode"
+            else f"https://www.geeksforgeeks.org/problems/{slug}/1"
+        )
         problem = db.scalar(
             select(Problem).where(Problem.platform == platform, Problem.slug == slug)
         )
@@ -477,7 +515,7 @@ def sync_platform(
             )
             db.add(problem)
         problem.title = incoming.title
-        problem.url = incoming.url
+        problem.url = canonical_url
         problem.external_id = (
             str(incoming.external_id) if incoming.external_id is not None else problem.external_id
         )

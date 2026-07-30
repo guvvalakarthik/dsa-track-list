@@ -1,12 +1,15 @@
 const $ = (id) => document.getElementById(id);
 
 async function settings() {
-  return chrome.storage.local.get({
-    apiUrl: "http://localhost:8000",
-    token: "",
-    leetcodeUser: "",
-    gfgUser: "",
-  });
+  const [local, session] = await Promise.all([
+    chrome.storage.local.get({
+      apiUrl: "http://localhost:8000",
+      leetcodeUser: "",
+      gfgUser: "",
+    }),
+    chrome.storage.session.get({ token: "" }),
+  ]);
+  return { ...local, ...session };
 }
 
 function setStatus(message, kind = "") {
@@ -38,7 +41,7 @@ async function load() {
   $("leetcodeUser").value = config.leetcodeUser;
   $("gfgUser").value = config.gfgUser;
   try {
-    await api("/api/health");
+    await api("/api/auth/verify");
     $("connectionDot").classList.add("online");
     setStatus("Connected. Automatic accepted-solution capture is active.", "success");
   } catch {
@@ -47,14 +50,23 @@ async function load() {
 }
 
 $("save").addEventListener("click", async () => {
-  await chrome.storage.local.set({
-    apiUrl: TrackForgeUtils.normalizeApiUrl($("apiUrl").value),
-    token: $("token").value.trim(),
-    leetcodeUser: $("leetcodeUser").value.trim(),
-    gfgUser: $("gfgUser").value.trim(),
-  });
   try {
-    await api("/api/health");
+    const apiUrl = TrackForgeUtils.validateApiUrl($("apiUrl").value);
+    const origin = `${new URL(apiUrl).origin}/*`;
+    const alreadyGranted = await chrome.permissions.contains({ origins: [origin] });
+    if (!alreadyGranted) {
+      const granted = await chrome.permissions.request({ origins: [origin] });
+      if (!granted) throw new Error("Permission to connect to this API was not granted.");
+    }
+    await Promise.all([
+      chrome.storage.local.set({
+        apiUrl,
+        leetcodeUser: $("leetcodeUser").value.trim(),
+        gfgUser: $("gfgUser").value.trim(),
+      }),
+      chrome.storage.session.set({ token: $("token").value.trim() }),
+    ]);
+    await api("/api/auth/verify");
     $("connectionDot").classList.add("online");
     setStatus("Connection saved and verified.", "success");
   } catch (error) {

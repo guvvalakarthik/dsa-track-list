@@ -6,12 +6,12 @@
   "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": [
     "http://localhost:8000/*",
-    "https://*/*",
     "https://leetcode.com/*",
     "https://www.geeksforgeeks.org/*",
     "https://practice.geeksforgeeks.org/*",
     "https://zerotrac.github.io/*"
   ],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
   "action": {
     "default_title": "TrackForge",
     "default_popup": "popup.html"

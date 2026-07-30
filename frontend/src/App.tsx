@@ -796,6 +796,7 @@ function SettingsModal({ onClose, onSaved }: { onClose: () => void; onSaved: () 
   const current = getSettings();
   const [apiUrl, setApiUrl] = useState(current.apiUrl);
   const [token, setToken] = useState(current.token);
+  const [settingsError, setSettingsError] = useState("");
 
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
@@ -812,10 +813,18 @@ function SettingsModal({ onClose, onSaved }: { onClose: () => void; onSaved: () 
           Personal tracker token
           <input type="password" value={token} onChange={(event) => setToken(event.target.value)} placeholder="Leave blank for local development" />
         </label>
-        <p>Use the same URL and token in the browser extension.</p>
+        <p>Use the same URL and token in the browser extension. Tokens are kept only for this browser session.</p>
+        {settingsError && <p className="checker-error">{settingsError}</p>}
         <div className="modal-actions">
           <button className="ghost-button" onClick={onClose}>Cancel</button>
-          <button className="primary-button" onClick={() => { saveSettings(apiUrl, token); onSaved(); }}>Save connection</button>
+          <button className="primary-button" onClick={() => {
+            try {
+              saveSettings(apiUrl, token);
+              onSaved();
+            } catch (err) {
+              setSettingsError(err instanceof Error ? err.message : "Invalid API URL");
+            }
+          }}>Save connection</button>
         </div>
       </div>
     </div>

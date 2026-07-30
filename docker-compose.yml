@@ -1,25 +1,28 @@
-﻿services:
+services:
   api:
     build: ./backend
     environment:
+      ENVIRONMENT: production
       DATABASE_URL: sqlite:////data/tracker.db
-      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      TRACKER_TOKEN: ${TRACKER_TOKEN:?Set TRACKER_TOKEN to at least 32 random characters}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
     volumes:
       - tracker-data:/data
     ports:
       - "8000:8000"
+    restart: unless-stopped
 
   web:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: http://localhost:8000
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
     ports:
-      - "5173:80"
+      - "5173:8080"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   tracker-data:
-
-

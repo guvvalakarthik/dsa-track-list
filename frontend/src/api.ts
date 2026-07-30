@@ -1,18 +1,31 @@
-﻿import type { Problem, Recommendation, Summary } from "./types";
+import type { Problem, Recommendation, Summary } from "./types";
 
 const DEFAULT_API =
   import.meta.env.VITE_API_URL || localStorage.getItem("trackforge_api") || "http://localhost:8000";
 
+export function normalizeApiUrl(value: string) {
+  const parsed = new URL(value.trim());
+  const localHttp =
+    parsed.protocol === "http:" && ["localhost", "127.0.0.1"].includes(parsed.hostname);
+  if (parsed.protocol !== "https:" && !localHttp) {
+    throw new Error("Use HTTPS for remote APIs; HTTP is allowed only on localhost.");
+  }
+  if (parsed.username || parsed.password) {
+    throw new Error("API URLs cannot contain embedded credentials.");
+  }
+  return `${parsed.origin}${parsed.pathname}`.replace(/\/+$/, "");
+}
+
 export function getSettings() {
   return {
     apiUrl: localStorage.getItem("trackforge_api") || DEFAULT_API,
-    token: localStorage.getItem("trackforge_token") || "",
+    token: sessionStorage.getItem("trackforge_token") || "",
   };
 }
 
 export function saveSettings(apiUrl: string, token: string) {
-  localStorage.setItem("trackforge_api", apiUrl.replace(/\/+$/, ""));
-  localStorage.setItem("trackforge_token", token);
+  localStorage.setItem("trackforge_api", normalizeApiUrl(apiUrl));
+  sessionStorage.setItem("trackforge_token", token);
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -34,6 +47,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   health: () => request<{ status: string }>("/api/health"),
+  verify: () => request<{ authenticated: boolean }>("/api/auth/verify"),
   summary: () => request<Summary>("/api/summary"),
   problems: (params: URLSearchParams) =>
     request<{ items: Problem[]; count: number }>(`/api/problems?${params}`),

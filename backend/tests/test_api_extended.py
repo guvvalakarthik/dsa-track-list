@@ -113,3 +113,56 @@ def test_zerotrac_import_upserts_dataset(monkeypatch):
     problem = client.get("/api/problems").json()["items"][0]
     assert problem["rating"] == 1200
     assert problem["contest"] == "weekly-1"
+
+def test_production_configuration_fails_closed():
+    import pytest
+
+    with pytest.raises(RuntimeError, match="at least 32 characters"):
+        main.validate_runtime_configuration(
+            environment="production", token="short", cors_origins=["https://app.example.com"]
+        )
+    with pytest.raises(RuntimeError, match="Wildcard CORS"):
+        main.validate_runtime_configuration(
+            environment="production", token="x" * 32, cors_origins=["*"]
+        )
+    main.validate_runtime_configuration(
+        environment="production",
+        token="x" * 32,
+        cors_origins=["https://app.example.com"],
+    )
+
+
+def test_authenticated_verification_endpoint(monkeypatch):
+    monkeypatch.setenv("TRACKER_TOKEN", "verification-secret")
+    assert client.get("/api/auth/verify").status_code == 401
+    verified = client.get(
+        "/api/auth/verify", headers={"X-Tracker-Token": "verification-secret"}
+    )
+    assert verified.status_code == 200
+    assert verified.json() == {"authenticated": True}
+
+
+def test_sync_replaces_untrusted_urls_with_canonical_platform_url():
+    response = client.post(
+        "/api/sync/leetcode",
+        json={
+            "problems": [
+                {
+                    "slug": "safe-link",
+                    "title": "Safe Link",
+                    "url": "javascript:alert(1)",
+                    "accepted": True,
+                }
+            ]
+        },
+    )
+    assert response.status_code == 200
+    problem = client.get("/api/problems").json()["items"][0]
+    assert problem["url"] == "https://leetcode.com/problems/safe-link/"
+
+
+def test_security_headers_are_present():
+    response = client.get("/api/health")
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["x-frame-options"] == "DENY"
+    assert response.headers["referrer-policy"] == "no-referrer"

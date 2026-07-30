@@ -36,10 +36,11 @@
   }
 
   async function loadStatuses() {
-    const config = await chrome.storage.local.get({
-      apiUrl: "http://localhost:8000",
-      token: "",
-    });
+    const [local, session] = await Promise.all([
+      chrome.storage.local.get({ apiUrl: "http://localhost:8000" }),
+      chrome.storage.session.get({ token: "" }),
+    ]);
+    const config = { ...local, ...session };
     try {
       const response = await fetch(
         `${TrackForgeUtils.normalizeApiUrl(config.apiUrl)}/api/extension/status-map`,

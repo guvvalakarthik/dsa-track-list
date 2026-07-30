@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { api, getSettings, saveSettings } from "../api";
+import { api, getSettings, normalizeApiUrl, saveSettings } from "../api";
 
 describe("API client", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   it("normalizes and persists connection settings", () => {
@@ -56,6 +57,7 @@ describe("API client", () => {
     );
 
     await api.health();
+    await api.verify();
     await api.problems(new URLSearchParams({ limit: "10" }));
     await api.resolve("https://leetcode.com/problems/two-sum/");
     await api.override(1, true);
@@ -64,7 +66,7 @@ describe("API client", () => {
     await api.importLeetCodeCatalog();
     await api.recommendations();
 
-    expect(fetchMock).toHaveBeenCalledTimes(8);
+    expect(fetchMock).toHaveBeenCalledTimes(9);
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/api/problems/resolve?url="),
       expect.any(Object),
@@ -73,4 +75,11 @@ describe("API client", () => {
       expect.stringContaining("/api/problems/1/override"),
       expect.objectContaining({ method: "PUT" }),
     );
+  });
+  it("rejects insecure remote API URLs and embedded credentials", () => {
+    expect(() => normalizeApiUrl("http://tracker.example.com")).toThrow("Use HTTPS");
+    expect(() => normalizeApiUrl("https://user:pass@tracker.example.com")).toThrow(
+      "embedded credentials",
+    );
+    expect(normalizeApiUrl("http://localhost:8000/")).toBe("http://localhost:8000");
   });});

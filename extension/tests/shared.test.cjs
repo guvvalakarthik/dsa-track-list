@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const {
   normalizeApiUrl,
+  validateApiUrl,
   hasAcceptedSignal,
   problemSlug,
 } = require("../shared.js");
@@ -19,4 +20,12 @@ test("detects platform-specific acceptance signals", () => {
 test("extracts a canonical problem slug", () => {
   assert.equal(problemSlug("/problems/two-sum/description/"), "two-sum");
   assert.equal(problemSlug("/contest/weekly"), null);
+});
+test("rejects insecure remote tracker URLs", () => {
+  assert.throws(() => validateApiUrl("http://tracker.example.com"), /Use HTTPS/);
+  assert.throws(
+    () => validateApiUrl("https://user:pass@tracker.example.com"),
+    /embedded credentials/,
+  );
+  assert.equal(validateApiUrl("http://localhost:8000/"), "http://localhost:8000");
 });
