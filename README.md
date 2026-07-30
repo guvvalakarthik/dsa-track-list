@@ -130,6 +130,10 @@ docs/        Architecture, API, deployment, operations, decisions, screenshots
 
 TrackForge is designed as a secure single-user self-hosted application. The bearer token is an intentional low-complexity boundary, not a multi-tenant identity system. A public SaaS version would need per-user identity, authorization, tenancy isolation, quotas, and a managed job queue. Those trade-offs are documented rather than hidden.
 
+## Contributing and security
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow and [SECURITY.md](SECURITY.md) for private vulnerability reporting. Notable changes are tracked in [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

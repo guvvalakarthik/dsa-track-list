@@ -71,3 +71,15 @@ jobs:
         with:
           node-version: 22
       - run: npm test
+  containers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production images
+        run: |
+          docker build -t trackforge-api:ci backend
+          docker build --build-arg VITE_API_URL=http://localhost:8000 -t trackforge-web:ci frontend
+      - name: Assert non-root runtime users
+        run: |
+          test "$(docker run --rm --entrypoint id trackforge-api:ci -u)" != "0"
+          test "$(docker run --rm --entrypoint id trackforge-web:ci -u)" != "0"

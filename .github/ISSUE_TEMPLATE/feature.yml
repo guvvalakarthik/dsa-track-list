@@ -1,0 +1,37 @@
+name: Feature request
+description: Propose a focused product or engineering improvement
+title: "feat: "
+labels: ["enhancement", "triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user or operator problem is not handled today?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe success without prescribing implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: Possible approach and trade-offs
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options: [Dashboard, API, Browser extension, Database or migrations, Docker or operations, Documentation, Cross-cutting]
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This fits the documented single-user self-hosted scope, or explains why that scope should change.
+          required: true
