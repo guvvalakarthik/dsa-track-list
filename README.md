@@ -110,7 +110,7 @@ cd ..\extension
 npm test
 ```
 
-Current local verification: 23 backend tests passed (plus the opt-in PostgreSQL test in CI), 7 frontend tests passed, Chromium E2E passed, extension tests passed, and both production images run as non-root users.
+Current local verification: 23 backend tests passed (plus the opt-in PostgreSQL test in CI), 14 frontend tests passed, Chromium E2E passed, extension tests passed, and both production images run as non-root users.
 
 ## Operational evidence
 
