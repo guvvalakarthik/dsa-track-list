@@ -51,6 +51,10 @@ If a job fails:
 
 Retry policy covers connection errors and HTTP 429/500/502/503/504 with a small exponential delay. Permanent HTTP 4xx errors are not retried.
 
+## Database credential rotation
+
+A persisted PostgreSQL cluster retains its role password independently of the container environment. Rotate the role password in PostgreSQL first, then update the deployment secret and recreate containers. If logs show `password authentication failed` immediately after an `.env` change, restore the previous secret to regain access and complete an in-database rotation; do not reinitialize or delete the volume.
+
 ## Database backup
 
 For the Compose topology:

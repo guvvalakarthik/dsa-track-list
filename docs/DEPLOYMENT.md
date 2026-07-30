@@ -31,6 +31,12 @@ LOG_LEVEL=INFO
 
 `TRACKER_TOKEN` and wildcard CORS fail validation in production when unsafe. `VITE_API_URL` is compiled into the frontend image, so rebuild the web image when it changes.
 
+### Existing PostgreSQL volumes and password rotation
+
+The official PostgreSQL image reads `POSTGRES_PASSWORD` only while initializing an empty data directory. Editing `.env` later does **not** change the password stored in an existing named volume; changing only the API connection string will make startup fail authentication.
+
+To rotate safely, back up the database, keep the old credential active long enough to connect, change the role password inside PostgreSQL using an interactive/secret-managed session, update `POSTGRES_PASSWORD` in the deployment secret store, then recreate the API and database containers. Verify `/api/ready` before restoring traffic. Do not delete the volume to "apply" a new password unless data loss is intentional and a tested restore exists.
+
 ## 2. Build and start
 
 ```bash
